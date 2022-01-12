@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         applicationId 'com.example.webp'
-        minSdkVersion 28
+        minSdkVersion 21
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -36,11 +36,18 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
-    implementation("io.coil-kt:coil:2.0.0-alpha01")
-    implementation("io.coil-kt:coil-gif:2.0.0-alpha01")
+    implementation("io.coil-kt:coil:2.0.0-alpha06")
+    implementation("io.coil-kt:coil-gif:2.0.0-alpha06")
     implementation project(":animated-webp")
     implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
-
+    implementation "com.jakewharton.timber:timber:4.7.1"
+    def version = "2.3.0"
+    implementation "com.facebook.fresco:fresco:$version"
+    implementation "com.facebook.fresco:animated-gif:$version"
+    implementation "com.facebook.fresco:animated-base:$version"
+    implementation "com.facebook.fresco:animated-webp:$version"
+    implementation "com.facebook.fresco:webpsupport:$version"
+    implementation "com.facebook.fresco:imagepipeline-okhttp3:$version"
 }
 repositories {
     mavenCentral()
