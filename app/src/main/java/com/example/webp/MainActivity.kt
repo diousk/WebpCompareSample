@@ -1,16 +1,16 @@
 package com.example.webp
 
 import android.annotation.SuppressLint
-import android.graphics.ImageDecoder
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.AnimatedImageDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.onAnimationEnd
@@ -19,12 +19,16 @@ import coil.request.repeatCount
 import coil.target.ImageViewTarget
 import com.facebook.drawee.view.SimpleDraweeView
 import com.show.animated_webp.drawable.WebPDrawable
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val imageBuilder: ImageRequest.Builder.() -> Unit by lazy(LazyThreadSafetyMode.NONE) {
         {
@@ -32,12 +36,33 @@ class MainActivity : AppCompatActivity() {
             onAnimationEnd { Timber.d("onAnimationEnd") }
         }
     }
+    private val viewModel by viewModels<MainViewModel>()
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        findViewById<Button>(R.id.smallGift).setOnClickListener {
+            viewModel.sendSmallGift(0)
+        }
+        findViewById<Button>(R.id.big1).setOnClickListener {
+            viewModel.sendBigGift1()
+        }
+        findViewById<Button>(R.id.big2).setOnClickListener {
+            viewModel.sendBigGift2()
+        }
+        findViewById<Button>(R.id.big3).setOnClickListener {
+            viewModel.sendBigGift3()
+        }
+
+        lifecycleScope.launchWhenResumed {
+            viewModel.resultChannel.consumeEach {
+                Timber.d("resultFlow gift $it")
+                delay(3000)
+                Timber.d("resultFlow done gift $it")
+            }
+        }
+
 
 
         val smallWebp = "http://blob.ufile.ucloud.com.cn/09ec18187db5ecaee28d3e49ec524f67"
@@ -65,24 +90,13 @@ class MainActivity : AppCompatActivity() {
                 val drawable = imageView.context.imageLoader.execute(request).drawable
                 Timber.d("start execute $drawable")
                 with(drawable as WebPDrawable) {
-                    Timber.d("play start $drawable")
-                    delay(getLoopDurationMs())
+                    val duration = getLoopDurationMs()
+                    Timber.d("play start duration $duration")
+                    delay(duration)
                     Timber.d("play end $drawable")
                 }
             }
 //            imageView.load(R.drawable.tiny, builder = imageBuilder)
-        }
-
-
-        /**
-         * Android Api >= 28
-         */
-        findViewById<Button>(R.id.nativeText).setOnClickListener {
-            val ivWebp2 = findViewById<ImageView>(R.id.ivWebp2)
-            val animationDrawable = ImageDecoder.decodeDrawable(ImageDecoder.createSource(resources, R.drawable.large))
-            val drawable = animationDrawable as AnimatedImageDrawable
-            drawable.start()
-            ivWebp2.setImageDrawable(drawable)
         }
 
         /**
