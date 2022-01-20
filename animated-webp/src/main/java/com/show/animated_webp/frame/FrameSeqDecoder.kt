@@ -342,6 +342,10 @@ abstract class FrameSeqDecoder<R : Reader, W : Writer>(
         loopLimit = limit
     }
 
+    fun getLoopDuration() : Long{
+        return frames.sumOf { it.frameDuration }.toLong()
+    }
+
     fun reset() {
         playCount = 0
         frameIndex = -1

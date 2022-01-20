@@ -77,6 +77,10 @@ abstract class FrameAnimationDrawable<Decoder : FrameSeqDecoder<*, *>?> : Drawab
         frameSeqDecoder!!.setLoopLimit(loopLimit)
     }
 
+    fun getLoopDurationMs(): Long {
+        return frameSeqDecoder!!.getLoopDuration()
+    }
+
     fun reset() {
         if (bitmap != null && !bitmap!!.isRecycled) {
             bitmap!!.eraseColor(Color.TRANSPARENT)

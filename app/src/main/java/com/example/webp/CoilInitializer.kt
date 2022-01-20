@@ -25,6 +25,7 @@ object CoilInitializer {
             .memoryCache(MemoryCache.Builder(context).maxSizePercent(0.25).build())
             .components {
                 add(AnimatedWebPDecoder.Factory())
+                add(GifDecoder.Factory())
             }
             .dispatcher(dispatchers)
             .crossfade(true)

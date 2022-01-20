@@ -1,6 +1,7 @@
 package com.show.animated_webp.decoder
 
 import android.graphics.*
+import android.util.Log
 import com.show.animated_webp.chunk.ANIMChunk
 import com.show.animated_webp.chunk.ANMFChunk
 import com.show.animated_webp.chunk.VP8XChunk
@@ -48,7 +49,9 @@ class WebPDecoder(loader: Loader, renderListener: RenderListener,) :
         val chunks = WebPParser.parse(reader)
         var anim = false
         var vp8x = false
+        var animDuration = 0L
         for (chunk in chunks) {
+            Log.d("WebPDecoder", "chunk $chunk")
             if (chunk is VP8XChunk) {
                 canvasWidth = chunk.canvasWidth
                 canvasHeight = chunk.canvasHeight
