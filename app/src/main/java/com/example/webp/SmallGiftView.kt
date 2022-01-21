@@ -3,11 +3,13 @@ package com.example.webp
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.webp.databinding.ViewSmallGiftBinding
+import com.example.webp.ext.awaitAnimationEnd
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.Channel
@@ -35,9 +37,8 @@ class SmallGiftView @JvmOverloads constructor(
                 Timber.d("display gift $it")
                 binding.giftView.isVisible = true
                 binding.giftView.loadImageUrl(it.url, staticImage = true)
-                delay(2000)
+                binding.giftView.awaitAnimationEnd(fadeInAnimation())
                 binding.giftView.isVisible = false
-                delay(100)
             }
         }
     }
@@ -47,5 +48,9 @@ class SmallGiftView @JvmOverloads constructor(
             Timber.d("enqueueGift gift $gift")
             displayChannel.send(gift)
         }
+    }
+
+    private fun fadeInAnimation() = AnimationUtils.loadAnimation(context, R.anim.anim_small_gift).apply {
+        fillAfter = true
     }
 }
