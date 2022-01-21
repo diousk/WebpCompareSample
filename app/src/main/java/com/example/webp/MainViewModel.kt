@@ -3,14 +3,12 @@ package com.example.webp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -78,6 +76,8 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun prepareGiftResource(gift: Gift): Gift {
+        val random = Random.nextLong(4000)
+        delay(random)
         runCatching {
             withTimeout(10_000L) { imagePrefetch.toFresco(gift.url) }
         }
