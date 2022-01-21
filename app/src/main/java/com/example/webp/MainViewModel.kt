@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
@@ -34,22 +33,32 @@ class MainViewModel @Inject constructor(
 
     private val giftEventChannel = Channel<Gift>()
 
-    private val selfResultChannel = Channel<Gift>(Channel.BUFFERED)
+    private val selfResultChannel = Channel<Gift>(Channel.BUFFERED, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val otherResultChannel = Channel<Gift>(10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val resultChannel = Channel<Gift>()
+
+    val smallResultChannel = Channel<Gift>(10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     init {
         viewModelScope.launch {
             val servants = (0..maxServants).map { serveGiftEvent(giftEventChannel, "chnl-$it") }
             fanIn(servants).consumeEach {
-                Timber.d("gift processed $it")
-                if (it.isSelf) {
-                    selfResultChannel.send(it)
-                } else {
-                    otherResultChannel.send(it)
+                Timber.d("gift processed, type ${it.type}, self ${it.isSelf}")
+                when (it.type) {
+                    is Type.Big -> {
+                        if (it.isSelf) {
+                            selfResultChannel.send(it)
+                        } else {
+                            otherResultChannel.send(it)
+                        }
+                    }
+                    is Type.Small -> {
+                        smallResultChannel.send(it)
+                    }
                 }
             }
         }
+
         viewModelScope.launch {
             while (viewModelScope.isActive) {
                 val gift = select<Gift> {

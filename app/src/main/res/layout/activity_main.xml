@@ -44,8 +44,8 @@
         android:id="@+id/big1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:layout_below="@+id/ivWebp"
+        android:layout_marginStart="10dp"
         android:layout_toEndOf="@+id/smallGift"
         android:text="big gift 1" />
 
@@ -53,17 +53,38 @@
         android:id="@+id/big2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:layout_below="@+id/ivWebp"
+        android:layout_marginStart="10dp"
         android:layout_toEndOf="@+id/big1"
         android:text="big gift 2" />
+
     <Button
         android:id="@+id/big3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/smallGift"
         android:layout_marginStart="10dp"
-        android:layout_below="@+id/ivWebp"
-        android:layout_toEndOf="@+id/big2"
         android:text="big gift 3" />
+
+    <LinearLayout
+        android:id="@+id/smallGiftContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/big3"
+        android:layout_marginTop="20dp"
+        android:background="@color/colorGrey"
+        android:orientation="horizontal">
+
+        <com.example.webp.SmallGiftView
+            android:id="@+id/smallGiftView1"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
+
+        <com.example.webp.SmallGiftView
+            android:id="@+id/smallGiftView2"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="20dp" />
+    </LinearLayout>
 
 </RelativeLayout>

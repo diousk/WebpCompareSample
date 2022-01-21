@@ -5,11 +5,13 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import androidx.lifecycle.lifecycleScope
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -42,8 +44,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        var counter = 0
         findViewById<Button>(R.id.smallGift).setOnClickListener {
-            viewModel.sendSmallGift(0)
+            viewModel.sendSmallGift(counter++ %2)
         }
         findViewById<Button>(R.id.big1).setOnClickListener {
             viewModel.sendBigGift1()
@@ -55,6 +58,7 @@ class MainActivity : AppCompatActivity() {
             viewModel.sendBigGift3()
         }
 
+        // big gift
         lifecycleScope.launchWhenResumed {
             viewModel.resultChannel.consumeEach {
                 Timber.d("resultFlow gift $it")
@@ -63,6 +67,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // small gift
+        lifecycleScope.launchWhenResumed {
+            viewModel.smallResultChannel.consumeEach {
+                val position = (it.type as Type.Small).position
+                val view = findViewById<ViewGroup>(R.id.smallGiftContainer).getChildAt(position) as SmallGiftView
+                view.enqueueGift(it)
+            }
+        }
 
 
         val smallWebp = "http://blob.ufile.ucloud.com.cn/09ec18187db5ecaee28d3e49ec524f67"
