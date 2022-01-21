@@ -87,7 +87,6 @@ class ImagePrefetchImpl @Inject constructor(
         val request = ImageRequest.Builder(context)
             .data(url)
             .build()
-        val result = context.imageLoader.execute(request)
-        Timber.d("result duration ${(result.drawable as WebPDrawable).getLoopDurationMs()}")
+        context.imageLoader.execute(request)
     }
 }

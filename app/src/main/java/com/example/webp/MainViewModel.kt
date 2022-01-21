@@ -14,6 +14,8 @@ import kotlin.random.Random
 class MainViewModel @Inject constructor(
     private val imagePrefetch: ImagePrefetch
 ) : ViewModel() {
+    enum class Loader {Fresco, Coil}
+    val imageLoader = Loader.Coil
 
     // Note: return type can be different
     fun CoroutineScope.serveGiftEvent(
@@ -27,7 +29,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private val maxServants = 2 // for prepare gift resource concurrently
+    private val numServants = 3 // for prepare gift resource concurrently
 
     private val giftEventChannel = Channel<Gift>()
 
@@ -39,7 +41,7 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val servants = (0..maxServants).map { serveGiftEvent(giftEventChannel, "chnl-$it") }
+            val servants = (0 until numServants).map { serveGiftEvent(giftEventChannel, "chnl-$it") }
             fanIn(servants).consumeEach {
                 Timber.d("gift processed, type ${it.type}, self ${it.isSelf}")
                 when (it.type) {
@@ -72,14 +74,22 @@ class MainViewModel @Inject constructor(
                 resultChannel.send(gift)
             }
         }
-
     }
 
     private suspend fun prepareGiftResource(gift: Gift): Gift {
-        val random = Random.nextLong(4000)
+        val random = Random.nextLong(1000)
+        Timber.d("prepare random $random")
         delay(random)
         runCatching {
-            withTimeout(10_000L) { imagePrefetch.toFresco(gift.url) }
+            withTimeout(120_000L) {
+                Timber.d("cache image to $imageLoader")
+                if (imageLoader == Loader.Fresco) {
+                    imagePrefetch.toFresco(gift.url)
+                } else {
+                    imagePrefetch.toCoil(gift.url)
+                }
+                Timber.d("cache image done $imageLoader")
+            }
         }
         return gift
     }
@@ -109,7 +119,7 @@ class MainViewModel @Inject constructor(
     }
 
     // simulate socket event from remote server
-    fun sendBigGift3() {
+    fun sendSelfBigGift() {
         val url = "http://blob.ufile.ucloud.com.cn/e0722a92365239c43afd3c7307c1f6ec"
         viewModelScope.launch {
             giftEventChannel.send(Gift(Type.Big, url, isSelf = true))

@@ -49,9 +49,7 @@ class WebPDecoder(loader: Loader, renderListener: RenderListener,) :
         val chunks = WebPParser.parse(reader)
         var anim = false
         var vp8x = false
-        var animDuration = 0L
         for (chunk in chunks) {
-            Log.d("WebPDecoder", "chunk $chunk")
             if (chunk is VP8XChunk) {
                 canvasWidth = chunk.canvasWidth
                 canvasHeight = chunk.canvasHeight

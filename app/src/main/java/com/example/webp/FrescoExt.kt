@@ -15,8 +15,11 @@ import com.facebook.imagepipeline.common.ImageDecodeOptionsBuilder
 import com.facebook.imagepipeline.image.ImageInfo
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.imagepipeline.request.ImageRequestBuilder
+import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 fun SimpleDraweeView.loadImageUrl(
     imgUrl: String?,
@@ -47,6 +50,58 @@ fun SimpleDraweeView.loadImageUrl(
         oldController = controller
         imageRequest = request
     }.build()
+}
+
+suspend fun SimpleDraweeView.loadAnim(
+    imgUrl: String,
+    autoPlay: Boolean = true,
+    loops: Boolean = false,
+    onStopped: () -> Unit = {}
+) = suspendCancellableCoroutine<Long> { cont ->
+    val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(imgUrl)).build()
+    val listener = object : BaseControllerListener<ImageInfo>() {
+        override fun onFinalImageSet(id: String, imageInfo: ImageInfo?, animatable: Animatable?) {
+            Timber.d("onFinalImageSet $animatable")
+            (animatable as? AnimatedDrawable2)?.apply {
+                if (!loops) {
+                    animationBackend = LoopBackend(animationBackend)
+                }
+
+                setAnimationListener(
+                    object : BaseAnimationListener() {
+                        override fun onAnimationStart(drawable: AnimatedDrawable2?) {
+                            Timber.d("onAnimationStart ${drawable?.loopDurationMs}")
+                            if (cont.isActive) cont.resume(drawable?.loopDurationMs ?: 0)
+                            super.onAnimationStart(drawable)
+                        }
+
+                        override fun onAnimationStop(drawable: AnimatedDrawable2?) {
+                            Timber.d("onAnimationStop $animatable")
+                            super.onAnimationStop(drawable)
+                            onStopped.invoke()
+                        }
+                    }
+                )
+            } ?: run { if (cont.isActive) cont.resume(0) }
+        }
+
+        override fun onFailure(id: String, throwable: Throwable) {
+            Timber.e(throwable)
+            if (cont.isActive) cont.resumeWithException(throwable)
+        }
+    }
+
+    controller = Fresco.newDraweeControllerBuilder().apply {
+        setUri(request.sourceUri)
+        controllerListener = listener
+        autoPlayAnimations = autoPlay
+        oldController = controller
+        imageRequest = request
+    }.build()
+
+    cont.invokeOnCancellation {
+        controller = null
+    }
 }
 
 fun SimpleDraweeView.loadImgFile(filePath: String?) {
