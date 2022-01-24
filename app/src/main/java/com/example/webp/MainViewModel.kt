@@ -14,7 +14,8 @@ import kotlin.random.Random
 class MainViewModel @Inject constructor(
     private val imagePrefetch: ImagePrefetch
 ) : ViewModel() {
-    enum class Loader {Fresco, Coil}
+    enum class Loader { Fresco, Coil }
+
     val imageLoader = Loader.Coil
 
     // Note: return type can be different
@@ -35,7 +36,6 @@ class MainViewModel @Inject constructor(
 
     private val selfResultChannel = Channel<Gift>(Channel.BUFFERED, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val otherResultChannel = Channel<Gift>(10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val resultChannel = Channel<Gift>()
 
     val smallResultChannel = Channel<Gift>(10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
@@ -58,20 +58,19 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
+    }
 
-        viewModelScope.launch {
-            while (viewModelScope.isActive) {
-                val gift = select<Gift> {
-                    selfResultChannel.onReceive {
-                        Timber.d("receive my gift")
-                        it
-                    }
-                    otherResultChannel.onReceive {
-                        Timber.d("receive other gift")
-                        it
-                    }
+    fun observeBigGift(): ReceiveChannel<Gift> = viewModelScope.produce {
+        while (isActive) {
+            select<Unit> {
+                selfResultChannel.onReceive {
+                    Timber.d("receive my gift")
+                    send(it)
                 }
-                resultChannel.send(gift)
+                otherResultChannel.onReceive {
+                    Timber.d("receive other gift")
+                    send(it)
+                }
             }
         }
     }
@@ -124,6 +123,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             giftEventChannel.send(Gift(Type.Big, url, isSelf = true))
         }
+    }
+
+    fun cancel() {
+        viewModelScope.cancel()
     }
 }
 

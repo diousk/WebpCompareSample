@@ -65,6 +65,15 @@
         android:layout_below="@+id/smallGift"
         android:text="self gift" />
 
+    <Button
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/smallGift"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@+id/self"
+        android:text="cancel" />
+
     <LinearLayout
         android:id="@+id/smallGiftContainer"
         android:layout_width="wrap_content"

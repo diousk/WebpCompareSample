@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -55,9 +56,13 @@ class MainActivity : AppCompatActivity() {
             viewModel.sendSelfBigGift()
         }
 
+        findViewById<Button>(R.id.cancel).setOnClickListener {
+            viewModel.cancel()
+        }
+
         // big gift display
         lifecycleScope.launchWhenResumed {
-            viewModel.resultChannel.consumeEach {
+            viewModel.observeBigGift().receiveAsFlow().collect {
                 Timber.d("display gift $it")
                 if (viewModel.imageLoader == MainViewModel.Loader.Fresco) {
                     val draweeView = findViewById<SimpleDraweeView>(R.id.frescoWebp)
